@@ -8,6 +8,8 @@ Cloud Speech-to-Text API
 Cloud Translation API
 Cloud Vision API
 Create a service account key (JSON) → download locally.
+https://colab.research.google.com/drive/1ggvOmWTfBe5edbD_wLaaQXqP9_QtdsZw?usp=sharing
+if you want to work on my google colab but you have to use your own gcp services
 
 
 
