@@ -1,0 +1,19 @@
+Install SDKs:
+pip install google-cloud-speech google-cloud-translate google-cloud-vision google-cloud-aiplatform fastapi uvicorn
+gcloud auth application-default login
+
+# Install gcloud CLI (if not already)
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+
+# Login with Google account
+gcloud auth login
+
+# Set default project
+gcloud config set project artisan-ai-hackathon
+
+# For Python SDKs, set credentials
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account.json"
+
+
