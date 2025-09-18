@@ -217,8 +217,8 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
 
             {/* Auth Buttons */}
             <div className="flex items-center space-x-2 ml-2">
-              <a href="/create-account" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
-                Sign Up/Sign In
+              <a href="/verify-yourself" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
+                verify-yourself
               </a>
             </div>
           </div>
