@@ -14,7 +14,24 @@ interface ProductCardProps {
   isLocal?: boolean;
 }
 
+import { getAuth, User, onAuthStateChanged } from "firebase/auth";
+import {auth} from "../../firebase"
+
 const ProductCard: React.FC<ProductCardProps> = ({ id, name, description, image, category, rating, isLocal }) => {
+
+  
+
+  const checkAuth = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      // User is signed in
+      console.log("User is signed in:", user);
+    } else {
+      // No user is signed in
+      console.log("No user is signed in");
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="h-48 overflow-hidden relative">
@@ -122,9 +139,10 @@ interface StoreNavbarProps {
   isLocating: boolean;
   onLocationRequest: () => void;
   onShowMap: () => void;
+  user: User | null; // 👈 Add user here
 }
 
-const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onLocationRequest, onShowMap }) => {
+const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onLocationRequest, onShowMap, user }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
@@ -216,11 +234,20 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
             </button>
 
             {/* Auth Buttons */}
-            <div className="flex items-center space-x-2 ml-2">
+            {user ? (
+              <div className="flex items-center space-x-2 ml-2">
+              <a href="/profile" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
+                Profile
+              </a>
+            </div>
+            ) : (
+              <div className="flex items-center space-x-2 ml-2">
               <a href="/verify-yourself" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
                 verify-yourself
               </a>
             </div>
+            )}
+            
           </div>
         </div>
 
@@ -254,6 +281,16 @@ const Store: React.FC = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
+
+   const [user, setUser] = useState<User | null>(null); // 👈 Auth state
+    const auth = getAuth();
+
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+      });
+      return () => unsubscribe();
+    }, [auth]);
 
   // Function to get user's location
   const getUserLocation = () => {
@@ -424,6 +461,7 @@ const Store: React.FC = () => {
         isLocating={isLocating}
         onLocationRequest={getUserLocation}
         onShowMap={handleShowMap}
+        user={user}
       />
 
       {/* Location Error Alert */}

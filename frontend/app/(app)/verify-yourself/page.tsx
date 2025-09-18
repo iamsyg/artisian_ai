@@ -53,8 +53,8 @@ const Page = () => {
     setIsLoading(true);
     signInWithPopup(auth, googleProvider)
       .then((result) => {
-        const user = result.user;
-        setUserEmail(user.email);
+        const details = result.user;
+        setUserEmail(details.email);
         setIsLoading(false);
         Router.push("/store")
       })
