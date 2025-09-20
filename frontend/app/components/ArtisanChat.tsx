@@ -1,5 +1,6 @@
 // components/ArtisanChat.tsx
 import { useState, useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 
 interface Message {
   id: string;
@@ -26,7 +27,60 @@ const ArtisanChat = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  // Initialize socket connection
+  useEffect(() => {
+    const newSocket = io('/api/socket');
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    newSocket.on('user-message', (data: { message: string; conversationId: string; sender: string; timestamp: string }) => {
+      console.log('Received message:', data);
+      
+      // Add received message to the appropriate conversation
+      if (data.sender !== 'customer') {
+        const newMessage: Message = {
+          id: `${data.conversationId}-${Date.now()}`,
+          text: data.message,
+          sender: 'artisan',
+          timestamp: new Date(data.timestamp),
+          read: false
+        };
+
+        setMessages(prev => ({
+          ...prev,
+          [data.conversationId]: [...(prev[data.conversationId] || []), newMessage]
+        }));
+
+        // Update conversation
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === data.conversationId 
+              ? { 
+                  ...conv, 
+                  lastMessage: data.message, 
+                  lastMessageTime: new Date(data.timestamp),
+                  unreadCount: selectedConversation === data.conversationId ? 0 : conv.unreadCount + 1
+                } 
+              : conv
+          )
+        );
+      }
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+
+    return () => {
+      newSocket.close();
+    };
+  }, [selectedConversation]);
+
   // Sample conversations data
   const [conversations, setConversations] = useState<Conversation[]>([
     {
@@ -180,7 +234,7 @@ const ArtisanChat = () => {
   };
 
   const handleSendMessage = () => {
-    if (messageInput.trim() === '' || !selectedConversation) return;
+    if (messageInput.trim() === '' || !selectedConversation || !socket) return;
 
     const newMessage: Message = {
       id: `${selectedConversation}-${Date.now()}`,
@@ -210,10 +264,20 @@ const ArtisanChat = () => {
       )
     );
 
+    // Emit message through socket
+    socket.emit('user-message', {
+      message: messageInput,
+      conversationId: selectedConversation,
+      sender: 'customer',
+      timestamp: new Date().toISOString()
+    });
+
     setMessageInput('');
 
-    // Simulate artisan response after a delay
+    // Simulate artisan response after a delay (remove this in production)
     setTimeout(() => {
+      if (!socket) return;
+      
       const artisanResponses = [
         "Thanks for your message! I'll get back to you shortly.",
         "I appreciate your interest. Let me check my availability.",
@@ -224,32 +288,13 @@ const ArtisanChat = () => {
       
       const randomResponse = artisanResponses[Math.floor(Math.random() * artisanResponses.length)];
       
-      const artisanMessage: Message = {
-        id: `${selectedConversation}-${Date.now()}`,
-        text: randomResponse,
+      // Simulate receiving a message from artisan
+      socket.emit('user-message', {
+        message: randomResponse,
+        conversationId: selectedConversation,
         sender: 'artisan',
-        timestamp: new Date(),
-        read: false
-      };
-      
-      setMessages(prev => ({
-        ...prev,
-        [selectedConversation]: [...(prev[selectedConversation] || []), artisanMessage]
-      }));
-      
-      // Update conversation with artisan's response
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === selectedConversation 
-            ? { 
-                ...conv, 
-                lastMessage: randomResponse, 
-                lastMessageTime: new Date(),
-                unreadCount: conv.unreadCount + 1
-              } 
-            : conv
-        )
-      );
+        timestamp: new Date().toISOString()
+      });
     }, 2000);
   };
 
@@ -303,7 +348,12 @@ const ArtisanChat = () => {
           {/* Header */}
           <div className="bg-green-500 text-white p-3 flex items-center justify-between">
             {activeView === 'conversations' ? (
-              <h3 className="font-semibold">Chat with Artisans</h3>
+              <div className="flex items-center">
+                <h3 className="font-semibold">Chat with Artisans</h3>
+                {socket && (
+                  <div className="ml-2 w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                )}
+              </div>
             ) : (
               <div className="flex items-center">
                 <button 
@@ -423,7 +473,7 @@ const ArtisanChat = () => {
                       />
                       <button
                         onClick={handleSendMessage}
-                        disabled={messageInput.trim() === ''}
+                        disabled={messageInput.trim() === '' || !socket}
                         className="bg-green-500 text-white px-4 py-2 rounded-r-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         aria-label="Send message"
                       >

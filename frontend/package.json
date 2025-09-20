@@ -9,16 +9,19 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "express": "^5.1.0",
     "firebase": "^12.2.1",
-    "firebaseui": "^6.1.0",
     "next": "15.5.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/express": "^5.0.3",
+    "@types/node": "^20.19.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

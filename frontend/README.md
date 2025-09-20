@@ -42,4 +42,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 - npm install -g firebase-tools@latest
 - npm install firebase
-- npm install firebaseui --save
+- npm install socket.io 
+- npm i express
+- npm i --save-dev @types/express
+- npm i socket.io-client
