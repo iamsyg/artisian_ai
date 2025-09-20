@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Footer from '@/app/components/Footer';
+import ArtisanChat from '@/app/components/ArtisanChat';
 
 // Product card component
 interface ProductCardProps {
@@ -529,6 +530,8 @@ const Store: React.FC = () => {
               />
             ))}
           </div>
+
+          {user && <ArtisanChat />}
 
           {/* Pagination */}
           <div className="flex justify-center mt-12">
