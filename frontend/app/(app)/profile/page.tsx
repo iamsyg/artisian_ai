@@ -15,6 +15,7 @@ interface User {
   phone: string;
   email: string;
   coordinates: [number, number];
+  isArtisan: boolean;
 }
 
 interface Order {
@@ -37,7 +38,8 @@ const ProfilePage = () => {
     address: '123 Main St, San Francisco, CA 94111',
     phone: '+1 (555) 123-4567',
     email: 'john.doe@example.com',
-    coordinates: [37.7749, -122.4194]
+    coordinates: [37.7749, -122.4194],
+    isArtisan: false
   });
 
   // State for editable fields
@@ -53,21 +55,17 @@ const ProfilePage = () => {
 
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
-
-   const [userEmail, setUserEmail] = useState<string | null>(null);
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [otp, setOtp] = useState("");
-    const [showOtpField, setShowOtpField] = useState(false);
-    const [authError, setAuthError] = useState("");
+  const [showArtisanForm, setShowArtisanForm] = useState(false);
+  const [artisanApplication, setArtisanApplication] = useState({
+    businessName: '',
+    craftType: '',
+    description: '',
+    portfolio: ''
+  });
 
   const handleLogout = async () => {
-        setAuthError("");
-        await signOut(auth);
-        setUserEmail(null);
-        setPhoneNumber("");
-        setOtp("");
-        setShowOtpField(false);
-        router.push("/store");
+    await signOut(auth);
+    router.push("/store");
   };
 
   const handleEdit = () => {
@@ -92,6 +90,39 @@ const ProfilePage = () => {
     setShowContactForm(false);
   };
 
+  const handleArtisanSignup = () => {
+    if (user.isArtisan) {
+      alert('You are already registered as an artisan!');
+      return;
+    }
+    setShowArtisanForm(true);
+    // router.push('/https://artisian-dashboard-vaw9.vercel.app/');
+  };
+
+  const handleArtisanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would submit the artisan application
+    alert('Your artisan application has been submitted for review!');
+    setUser({...user, isArtisan: true});
+    setShowArtisanForm(false);
+    setArtisanApplication({
+      businessName: '',
+      craftType: '',
+      description: '',
+      portfolio: ''
+    });
+  };
+
+  const handleArtisanCancel = () => {
+    setShowArtisanForm(false);
+    setArtisanApplication({
+      businessName: '',
+      craftType: '',
+      description: '',
+      portfolio: ''
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Head>
@@ -113,18 +144,38 @@ const ProfilePage = () => {
                 <div>
                   <h1 className="text-3xl font-bold">{user.firstName} {user.lastName}</h1>
                   <p className="mt-1 opacity-90">Welcome to your profile</p>
+                  {user.isArtisan && (
+                    <span className="inline-block mt-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                      Verified Artisan
+                    </span>
+                  )}
                 </div>
               </div>
               {!isEditing ? (
-                <button
-                  onClick={handleEdit}
-                  className="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit Profile
-                </button>
+                <div className="flex flex-col items-end space-y-2">
+                  <button
+                    onClick={handleEdit}
+                    className="px-4 py-2 bg-white text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Profile
+                  </button>
+                  {!user.isArtisan && (
+                    <a href="https://artisian-dashboard-vaw9.vercel.app/" target="_blank" rel="noopener noreferrer">
+                      <button
+                        onClick={handleArtisanSignup}
+                        className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-300 flex items-center cursor-pointer"
+                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                        Become an Artisan
+                    </button>
+                    </a>
+                  )}
+                </div>
               ) : (
                 <div className="flex space-x-2">
                   <button
@@ -149,6 +200,8 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
+
+          {/* Artisan Application Form */}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
             {/* Left Column - Personal Info */}
