@@ -531,7 +531,7 @@ const Store: React.FC = () => {
             ))}
           </div>
 
-          <ArtisanChat/>
+          {user && <ArtisanChat />}
 
           {/* Pagination */}
           <div className="flex justify-center mt-12">
