@@ -46,3 +46,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - npm i express
 - npm i --save-dev @types/express
 - npm i socket.io-client
+- npm install @supabase/supabase-js
