@@ -31,6 +31,11 @@ export default function Dashboard() {
           <p>Account Created: {new Date(user.metadata.creationTime || "").toLocaleDateString()}</p>
         </div>
       )}
+      {user?.uid && (
+        <div>
+          <p>UID: {user.uid}</p>
+        </div>
+      )}
     </div>
   );
 }
