@@ -3,27 +3,27 @@
 import React, { useState, useEffect } from 'react';
 import Footer from '@/app/components/Footer';
 import ArtisanChat from '@/app/components/ArtisanChat';
+import { supabase } from '@/app/lib/supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 // Product card component
-interface ProductCardProps {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  category: string;
-  rating: number;
-  isLocal?: boolean;
+interface artisanCardProps {
+  artisanId: string;
+  artisanName: string;
+  artisanDescription: string;
+  artisanImage: string;
+  artisanCategory: string;
+  artisanRating: number;
+  artisanReviews?: string
 }
 
-import { getAuth, User, onAuthStateChanged } from "firebase/auth";
-import {auth} from "../../firebase"
 
-const ProductCard: React.FC<ProductCardProps> = ({ id, name, description, image, category, rating, isLocal }) => {
+const ArtisanCard: React.FC<artisanCardProps> = ({ artisanId, artisanName, artisanDescription, artisanImage, artisanCategory, artisanRating, artisanReviews }) => {
 
-  
+
 
   const checkAuth = async () => {
-    const user = auth.currentUser;
+    const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       // User is signed in
       console.log("User is signed in:", user);
@@ -36,35 +36,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ id, name, description, image,
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="h-48 overflow-hidden relative">
-        <img 
-          src={image} 
-          alt={name} 
+        <img
+          src={artisanImage}
+          alt={artisanName}
           className="w-full h-full object-cover transition-transform hover:scale-105"
         />
-        {isLocal && (
-          <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-md text-xs flex items-center">
-            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Local
-          </div>
-        )}
+        
       </div>
       <div className="p-6">
         <div className="flex justify-between items-start mb-2">
           <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
-            {category}
+            {artisanCategory}
           </span>
           <div className="flex items-center">
             <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="ml-1 text-sm text-gray-600">{rating.toFixed(1)}</span>
+            <span className="ml-1 text-sm text-gray-600">{artisanRating.toFixed(1)}</span>
           </div>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">{name}</h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">{artisanName}</h3>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{artisanDescription}</p>
         <div className="flex justify-between items-center">
           <button className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors">
             Add to Cart
@@ -99,7 +91,7 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ latitude, longitude, locationNa
       <div className="bg-white rounded-lg overflow-hidden w-full max-w-2xl">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-semibold">Your Location: {locationName}</h3>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >
@@ -122,7 +114,7 @@ const MapDisplay: React.FC<MapDisplayProps> = ({ latitude, longitude, locationNa
           </iframe>
         </div>
         <div className="p-4 border-t flex justify-end">
-          <button 
+          <button
             onClick={onClose}
             className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
           >
@@ -181,7 +173,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
                     </svg>
                     {userLocation}
                   </div>
-                  <button 
+                  <button
                     onClick={onShowMap}
                     className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
                   >
@@ -189,7 +181,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
                   </button>
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={onLocationRequest}
                   disabled={isLocating}
                   className="flex items-center text-sm text-gray-600 hover:text-indigo-600 font-medium disabled:opacity-50"
@@ -237,18 +229,18 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center space-x-2 ml-2">
-              <a href="/profile" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
-                Profile
-              </a>
-            </div>
+                <a href="/profile" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
+                  Profile
+                </a>
+              </div>
             ) : (
               <div className="flex items-center space-x-2 ml-2">
-              <a href="/verify-yourself" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
-                verify-yourself
-              </a>
-            </div>
-            )}
-            
+                <a href="/verify-yourself" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-medium text-sm">
+                  verify-yourself
+                </a>
+              </div>
+            )} 
+
           </div>
         </div>
 
@@ -257,11 +249,10 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
           {['All', 'Portrait', 'Landscape', 'Abstract', 'Watercolor', 'Comic', 'Oil Painting', 'Sketch', 'Vintage'].map((category) => (
             <button
               key={category}
-              className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer ${
-                category === 'All' 
-                  ? "bg-indigo-600 text-white" 
+              className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer ${category === 'All'
+                  ? "bg-indigo-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
+                }`}
             >
               {category}
             </button>
@@ -275,7 +266,7 @@ const StoreNavbar: React.FC<StoreNavbarProps> = ({ userLocation, isLocating, onL
 // Store page component
 const Store: React.FC = () => {
   const [userLocation, setUserLocation] = useState<string | null>(null);
-  const [userCoordinates, setUserCoordinates] = useState<{latitude: number | null; longitude: number | null}>({
+  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number | null; longitude: number | null }>({
     latitude: null,
     longitude: null
   });
@@ -283,15 +274,24 @@ const Store: React.FC = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
 
-   const [user, setUser] = useState<User | null>(null); // 👈 Auth state
-    const auth = getAuth();
+  const [user, setUser] = useState<User | null>(null);
 
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
-      });
-      return () => unsubscribe();
-    }, [auth]);
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   // Function to get user's location
   const getUserLocation = () => {
@@ -308,12 +308,12 @@ const Store: React.FC = () => {
         try {
           const { latitude, longitude } = position.coords;
           setUserCoordinates({ latitude, longitude });
-          
+
           // Reverse geocoding to get location name
           const response = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           );
-          
+
           if (response.ok) {
             const data = await response.json();
             const city = data.city || data.locality || "Your location";
@@ -363,80 +363,84 @@ const Store: React.FC = () => {
   };
 
   // Sample product data with local items
-  const products = [
+  const artisans = [
     {
-      id: 1,
-      name: "AI Portrait Generator",
-      description: "Create stunning AI-generated portraits in various artistic styles with just a few clicks.",
-      image: "https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Portrait",
-      rating: 4.8,
-      isLocal: true
+      artisanId: 1,
+      artisanName: "AI Portrait Generator",
+      artisanDescription: "Create stunning AI-generated portraits in various artistic styles with just a few clicks.",
+      artisanImage: "https://images.unsplash.com/photo-1579546929662-711aa81148cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Portrait",
+      artisanRating: 4.8,
+      artisanReviews: "Noce"
     },
     {
-      id: 2,
-      name: "Landscape Art Pack",
-      description: "Transform your landscape photos into masterpieces with our specialized AI art tools.",
-      image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Landscape",
-      rating: 4.6
+      artisanId: 2,
+      artisanName: "Landscape Art Pack",
+      artisanDescription: "Transform your landscape photos into masterpieces with our specialized AI art tools.",
+      artisanImage: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Landscape",
+      artisanRating: 4.6,
+      artisanReviews: "Noce"
     },
     {
-      id: 3,
-      name: "Abstract Style Bundle",
-      description: "Generate unique abstract art with patterns and colors inspired by great abstract artists.",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Abstract",
-      rating: 4.9,
-      isLocal: true
+      artisanId: 3,
+      artisanName: "Abstract Style Bundle",
+      artisanDescription: "Generate unique abstract art with patterns and colors inspired by great abstract artists.",
+      artisanImage: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Abstract",
+      artisanRating: 4.9,
+      artisanReviews: "Noce",
     },
     {
-      id: 4,
-      name: "Digital Watercolor Kit",
-      description: "Create beautiful watercolor effects from your photos with our specialized AI algorithms.",
-      image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Watercolor",
-      rating: 4.7
+      artisanId: 4,
+      artisanName: "Digital Watercolor Kit",
+      artisanDescription: "Create beautiful watercolor effects from your photos with our specialized AI algorithms.",
+      artisanImage: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Watercolor",
+      artisanRating: 4.7,
+      artisanReviews: "Noce",
     },
     {
-      id: 5,
-      name: "Comic Book Art Converter",
-      description: "Turn your photos into comic book style artwork with dynamic lines and bold colors.",
-      image: "https://images.unsplash.com/photo-1628968434441-d9c8e092a013?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Comic",
-      rating: 4.5,
-      isLocal: true
+      artisanId: 5,
+      artisanName: "Comic Book Art Converter",
+      artisanDescription: "Turn your photos into comic book style artwork with dynamic lines and bold colors.",
+      artisanImage: "https://images.unsplash.com/photo-1628968434441-d9c8e092a013?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Comic",
+      artisanRating: 4.5,
+      artisanReviews: "Noce",
     },
     {
-      id: 6,
-      name: "Oil Painting Style Pack",
-      description: "Recreate the look of classic oil paintings with texture and brush stroke simulation.",
-      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Oil Painting",
-      rating: 4.8
+      artisanId: 6,
+      artisanName: "Oil Painting Style Pack",
+      artisanDescription: "Recreate the look of classic oil paintings with texture and brush stroke simulation.",
+      artisanImage: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Oil Painting",
+      artisanRating: 4.8,
+      artisanReviews: "Noce",
     },
     {
-      id: 7,
-      name: "Sketch & Drawing Tools",
-      description: "Convert images to pencil sketches, charcoal drawings, and ink illustrations.",
-      image: "https://images.unsplash.com/photo-1618331835717-801e976710b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Sketch",
-      rating: 4.4,
-      isLocal: true
+      artisanId: 7,
+      artisanName: "Sketch & Drawing Tools",
+      artisanDescription: "Convert images to pencil sketches, charcoal drawings, and ink illustrations.",
+      artisanImage: "https://images.unsplash.com/photo-1618331835717-801e976710b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Sketch",
+      artisanRating: 4.4,
+      artisanReviews: "Noce",
     },
     {
-      id: 8,
-      name: "Vintage Photo Effects",
-      description: "Apply vintage and retro effects to your photos with authentic film simulation.",
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      category: "Vintage",
-      rating: 4.3
+      artisanId: 8,
+      artisanName: "Vintage Photo Effects",
+      artisanDescription: "Apply vintage and retro effects to your photos with authentic film simulation.",
+      artisanImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      artisanCategory: "Vintage",
+      artisanRating: 4.3,
+      artisanReviews: "Noce",
     }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
+
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
         <div className="container mx-auto px-4 text-center">
@@ -457,7 +461,7 @@ const Store: React.FC = () => {
       </section>
 
       {/* Store Navigation with Search and Filters */}
-      <StoreNavbar 
+      <StoreNavbar
         userLocation={userLocation}
         isLocating={isLocating}
         onLocationRequest={getUserLocation}
@@ -490,7 +494,7 @@ const Store: React.FC = () => {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">AI Art Tools</h2>
-              <p className="text-gray-600">Showing {products.length} products</p>
+              <p className="text-gray-600">Showing {artisans.length} products</p>
               {userLocation && (
                 <p className="text-sm text-green-600 mt-1 flex items-center">
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,21 +521,21 @@ const Store: React.FC = () => {
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.map(product => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                description={product.description}
-                image={product.image}
-                category={product.category}
-                rating={product.rating}
-                isLocal={product.isLocal}
+            {artisans.map(artisan => (
+              <ArtisanCard
+                key={artisan.artisanId}
+                artisanId={artisan.artisanId.toString()}
+                artisanName={artisan.artisanName}
+                artisanDescription={artisan.artisanDescription}
+                artisanImage={artisan.artisanImage}
+                artisanCategory={artisan.artisanCategory}
+                artisanRating={artisan.artisanRating}
+                artisanReviews={artisan.artisanReviews}
               />
             ))}
           </div>
 
-          {user && <ArtisanChat />}
+          {/* {user && <ArtisanChat />} */}
 
           {/* Pagination */}
           <div className="flex justify-center mt-12">
