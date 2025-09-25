@@ -52,12 +52,10 @@ export async function POST(request: NextRequest) {
             }
         )
         return NextResponse.json(
-            {
-                publicId: result.public_id
-            },
-            {
-                status: 200
-            }
+        {
+            publicUrl: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${result.public_id}`
+        },
+        { status: 200 }
         )
 
     } catch (error) {

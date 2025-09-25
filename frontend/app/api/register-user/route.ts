@@ -18,7 +18,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const reqBody = await request.json();
-    const { fullName, email, phoneNumber, address } = reqBody;
+    const { full_name, email, phone_number, address, photo_url } = reqBody;
+
+    console.log("Received body:", reqBody);
 
     // Check if user exists
     const { data: existingUser } = await supabase
@@ -36,10 +38,11 @@ export async function POST(request: NextRequest) {
   .from("users")
   .insert({
     user_supabase_uid: user.id, // Auth user ID from Supabase session
-    full_name: fullName,        // match DB column exactly
+    full_name: full_name,        // match DB column exactly
     email: email,
-    phone_number: phoneNumber,  // match DB column exactly
-    address: address
+    phone_number: phone_number,  // match DB column exactly
+    address: address,
+    photo_url: photo_url
   })
   .select()
   .single();
