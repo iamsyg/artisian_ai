@@ -62,61 +62,104 @@ const Page = () => {
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // const file = e.target.files?.[0];
-    // if (file) {
-    //   setUserData(prev => ({ ...prev, imageFile: file }));
-      
-    //   // Create image preview
-    //   const reader = new FileReader();
-    //   reader.onload = (e) => {
-    //     setImagePreview(e.target?.result as string);
-    //   };
-    //   reader.readAsDataURL(file);
-    // }
-  };
+  const handleImageUpload: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // show preview
+  const previewUrl = URL.createObjectURL(file);
+  setImagePreview(previewUrl);
+
+  // save file to state (in case you want to submit later)
+  setUserData((prev) => ({
+    ...prev,
+    imageFile: file,
+  }));
+
+  // get current session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    alert("Not authenticated");
+    return;
+  }
+
+  // prepare form data
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/api/image-upload", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await res.json();
+    console.log("Upload success:", data);
+
+    // store cloudinary publicId in your state
+    setUserData((prev) => ({
+      ...prev,
+      imageFile: file, // still store raw file
+      photoURL: data.publicId, // <-- add this to schema for saving in DB
+    }));
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    alert("Image upload failed");
+  }
+};
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // e.preventDefault();
-    // if (!user) return;
+    e.preventDefault();
+    if (!user) return;
 
-    // setIsLoading(true);
+    setIsLoading(true);
 
-    // try {
-    //   // Prepare form data for API
-    //   const formData = new FormData();
-    //   formData.append("userId", user.id);
-    //   formData.append("email", user.email || "");
-    //   formData.append("fullName", userData.fullName);
-    //   formData.append("address", userData.address);
-    //   formData.append("phoneNumber", userData.phoneNumber);
+    try {
+      // Prepare form data for API
+      const formData = new FormData();
+      formData.append("userId", user.id);
+      formData.append("email", user.email || "");
+      formData.append("fullName", userData.fullName);
+      formData.append("address", userData.address);
+      formData.append("phoneNumber", userData.phoneNumber);
       
-    //   if (userData.imageFile) {
-    //     formData.append("image", userData.imageFile);
-    //   }
+      if (userData.imageFile) {
+        formData.append("image", userData.imageFile);
+      }
 
-    //   // Call your API endpoint
-    //   const response = await fetch("/api/complete-profile", {
-    //     method: "POST",
-    //     body: formData,
-    //   });
+      // Call your API endpoint
+      const response = await fetch("/api/complete-profile", {
+        method: "POST",
+        body: formData,
+      });
 
-    //   if (!response.ok) {
-    //     throw new Error("Failed to submit profile data");
-    //   }
+      if (!response.ok) {
+        throw new Error("Failed to submit profile data");
+      }
 
-    //   const result = await response.json();
-    //   console.log("Profile submitted successfully:", result);
+      const result = await response.json();
+      console.log("Profile submitted successfully:", result);
 
-    //   // Redirect to complete verification page
-    //   router.push(`/verify-yourself/complete-verification/${user.id}`);
+      // Redirect to complete verification page
+      router.push(`/verify-yourself/complete-verification/${user.id}`);
 
-    // } catch (error) {
-    //   console.error("Error submitting profile:", error);
-    //   alert("Error submitting profile. Please try again.");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    } catch (error) {
+      console.error("Error submitting profile:", error);
+      alert("Error submitting profile. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!user) {
