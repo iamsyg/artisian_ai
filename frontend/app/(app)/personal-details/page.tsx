@@ -1,9 +1,11 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '@/app/components/Sidebar';
+import { supabase } from '@/app/lib/supabaseClient';
+import { User } from '@/app/types/user';
 
-interface UserProfile {
+interface user {
   full_name: string;
   phone_number: string;
   email: string;
@@ -15,32 +17,36 @@ interface UserProfile {
 
 const PersonalProfilePage = () => {
   // Static user data
-  const userProfile: UserProfile = {
-    full_name: 'Sarah Johnson',
-    phone_number: '+1 (555) 123-4567',
-    email: 'sarah.j@example.com',
-    address: '123 Main Street, Apt 4B\nNew York, NY 10001\nUnited States',
-    total_orders: 12,
-    created_at: 'January 15, 2024',    
-    last_order_date: 'March 12, 2024'
-  };
 
-  // Format the join date to show how long ago the account was created
-  const formatJoinDuration = (joinDate: string) => {
-    const join = new Date(joinDate);
-    const now = new Date();
-    const diffMonths = (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
-    
-    if (diffMonths < 1) return 'Less than a month';
-    if (diffMonths === 1) return '1 month';
-    if (diffMonths < 12) return `${diffMonths} months`;
-    
-    const years = Math.floor(diffMonths / 12);
-    const months = diffMonths % 12;
-    
-    if (months === 0) return `${years} year${years > 1 ? 's' : ''}`;
-    return `${years} year${years > 1 ? 's' : ''} and ${months} month${months > 1 ? 's' : ''}`;
-  };
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const userId = session?.user.id;
+        if (!userId) return;
+  
+        const { data: userInfo, error } = await supabase
+          .from('users')
+          .select('full_name, email, photo_url, address, phone_number, total_orders, created_at')
+          .eq('user_supabase_uid', userId)
+          .maybeSingle();
+  
+        if (error) {
+          console.error('Error fetching user:', error);
+          return;
+        }
+  
+        if (userInfo) {
+          setUser(userInfo as User);
+        }
+      });
+  
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -65,12 +71,12 @@ const PersonalProfilePage = () => {
               <div className="flex items-center space-x-6">
                 <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
                   <span className="text-2xl font-bold text-blue-600">
-                    {userProfile.full_name.split(' ').map(n => n[0]).join('')}
+                    {user?.full_name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
                 <div className="text-white">
-                  <h2 className="text-2xl font-bold">{userProfile.full_name}</h2>
-                  <p className="text-blue-100">{userProfile.email}</p>
+                  <h2 className="text-2xl font-bold">{user?.full_name}</h2>
+                  <p className="text-blue-100">{user?.email}</p>
                 </div>
               </div>
             </div>
@@ -92,22 +98,22 @@ const PersonalProfilePage = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Full Name</label>
-                  <p className="text-gray-900 font-medium mt-1">{userProfile.full_name}</p>
+                  <p className="text-gray-900 font-medium mt-1">{user?.full_name}</p>
                 </div>
                 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Email Address</label>
-                  <p className="text-gray-900 font-medium mt-1">{userProfile.email}</p>
+                  <p className="text-gray-900 font-medium mt-1">{user?.email}</p>
                 </div>
                 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Phone Number</label>
-                  <p className="text-gray-900 font-medium mt-1">{userProfile.phone_number}</p>
+                  <p className="text-gray-900 font-medium mt-1">{user?.phone_number}</p>
                 </div>
                 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Address</label>
-                  <p className="text-gray-900 font-medium mt-1 whitespace-pre-line">{userProfile.address}</p>
+                  <p className="text-gray-900 font-medium mt-1 whitespace-pre-line">{user?.address}</p>
                 </div>
               </div>
             </div>
@@ -127,20 +133,28 @@ const PersonalProfilePage = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Total Orders</label>
                   <div className="flex items-center space-x-3 mt-1">
-                    <span className="text-2xl font-bold text-blue-600">{userProfile.total_orders}</span>
+                    <span className="text-2xl font-bold text-blue-600">{user?.total_orders}</span>
                     <span className="text-sm text-gray-500">completed orders</span>
                   </div>
                 </div>
                 
                 <div>
                   <label className="text-sm font-medium text-gray-500">Account Created</label>
-                  <p className="text-gray-900 font-medium mt-1">{userProfile.created_at}</p>
+                  <p className="text-gray-900 font-medium mt-1">{
+                    user?.created_at && new Date(user.created_at).toLocaleString("en-IN", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  }</p>
                 </div>
                 
-                <div>
+                {/* <div>
                   <label className="text-sm font-medium text-gray-500">Last Order</label>
-                  <p className="text-gray-900 font-medium mt-1">{userProfile.last_order_date}</p>
-                </div>
+                  <p className="text-gray-900 font-medium mt-1">{user?.last_order_date}</p>
+                </div> */}
               </div>
             </div>
           </div>
