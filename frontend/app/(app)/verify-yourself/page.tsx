@@ -27,13 +27,17 @@ const Page = () => {
         if (error) console.log("Error fetching user:", error);
         console.log("Fetched user:", user?.full_name);
 
-        if (user?.full_name) {
-          router.push("/store");
+        // router.replace("/verify-yourself/complete-profile");
+
+        if (!user?.full_name) {
+          router.replace("/verify-yourself/complete-profile");
         } else {
-          router.push("/verify-yourself/complete-profile");
+          router.replace("/store"); 
         }
       }
     });
+
+    
 
     return () => subscription.unsubscribe();
   }, [router]);
@@ -59,6 +63,7 @@ const Page = () => {
             },
           }}
           providers={[]} // email/password only
+          redirectTo={`${window.location.origin}/verify-yourself/complete-profile`}
         />
       </div>
     </div>
