@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabaseClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -8,9 +8,13 @@ import { useRouter } from "next/navigation";
 
 const Page = () => {
   const router = useRouter();
+  const [redirectUrl, setRedirectUrl] = useState<string>("");
 
   useEffect(() => {
     // 👀 listen for auth state change
+
+    setRedirectUrl(`${window.location.origin}/verify-yourself/complete-profile`);
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -63,7 +67,7 @@ const Page = () => {
             },
           }}
           providers={[]} // email/password only
-          redirectTo={`${window.location.origin}/verify-yourself/complete-profile`}
+          redirectTo={redirectUrl}
         />
       </div>
     </div>
