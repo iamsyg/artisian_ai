@@ -13,10 +13,25 @@ const Page = () => {
     // 👀 listen for auth state change
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session) {
         // ✅ redirect user after sign in
-        router.push("/verify-yourself/complete-profile");
+        const userId = session.user.id;
+
+        const { data: user, error } = await supabase
+        .from("users")
+        .select("full_name")
+        .eq("user_supabase_uid", userId)
+        .maybeSingle();
+
+        if (error) console.log("Error fetching user:", error);
+        console.log("Fetched user:", user?.full_name);
+
+        if (user?.full_name) {
+          router.push("/store");
+        } else {
+          router.push("/verify-yourself/complete-profile");
+        }
       }
     });
 
