@@ -4,6 +4,7 @@
 import { useState, useRef, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/app/lib/supabaseClient";
+import VerifiedBadge from '@/app/components/VerifiedBadge';
 
 interface ProfileFormData {
   fullName: string;
@@ -22,9 +23,10 @@ export default function ProfilePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [isProfileComplete, setIsProfileComplete] = useState(false); // New state
   const router = useRouter();
-   const [isUploading, setIsUploading] = useState(false);
-   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -41,34 +43,31 @@ export default function ProfilePage() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-  const formData = new FormData();
-  formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  const {
-    data: { session },
-    } = await supabase.auth.getSession();
-
+    const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/image-upload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData
-    });
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/image-upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData
+      });
 
-    if (!response.ok) throw new Error("Failed to upload image");
+      if (!response.ok) throw new Error("Failed to upload image");
 
-    const data = await response.json();
-    return data.publicUrl || null; // Your API should return a URL
-  } catch (error) {
-    console.error(error);
-    alert("Image upload failed");
-    return null;
-  }
-};
+      const data = await response.json();
+      return data.publicUrl || null;
+    } catch (error) {
+      console.error(error);
+      alert("Image upload failed");
+      return null;
+    }
+  };
 
   const handleRemoveImage = () => {
     setFormData(prev => ({ ...prev, imageFile: null }));
@@ -77,59 +76,85 @@ export default function ProfilePage() {
   };
 
   const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  const {
-  data: { session },
-} = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    console.log("Token:", token);
 
-const token = session?.access_token;
-console.log("Token:", token);
+    try {
+      let uploadedUrl: string | null = null;
 
-  try {
-    let uploadedUrl: string | null = null;
+      if (formData.imageFile) {
+        uploadedUrl = await uploadImage(formData.imageFile);
+      }
 
-    if (formData.imageFile) {
-      uploadedUrl = await uploadImage(formData.imageFile);
-    }
+      const { data } = await supabase.auth.getUser();
+      const email = data.user?.email;
 
-    const { data } = await supabase.auth.getUser();
-    const email = data.user?.email;
-
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register-user`,
-      {
-        method: "POST",
-        headers: { 
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register-user`,
+        {
+          method: "POST",
+          headers: { 
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
-         },
-        body: JSON.stringify({
-          full_name: formData.fullName,
-          address: formData.address,
-          phone_number: formData.phoneNumber,
-          photo_url: uploadedUrl,
-          email
-        })
+          },
+          body: JSON.stringify({
+            full_name: formData.fullName,
+            address: formData.address,
+            phone_number: formData.phoneNumber,
+            photo_url: uploadedUrl,
+            email
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Profile completion failed");
       }
-    );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Signup failed");
+      // Profile completed successfully
+      setIsProfileComplete(true);
+      
+      // Reset form
+      setFormData({
+        fullName: '',
+        address: '',
+        phoneNumber: '',
+        imageFile: null,
+      });
+      setPreviewUrl(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+
+      console.log("Profile completed successfully");
+
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Profile completion failed");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    console.log(response);
-
-    router.push("/signin");
-  } catch (error: any) {
-    console.error(error);
-    alert(error.message || "Signup failed");
-  } finally {
-    setIsSubmitting(false);
+  // If profile is complete, show the VerifiedBadge
+  if (isProfileComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <VerifiedBadge
+            size="lg"
+            variant="success"
+            showButton={true}
+            buttonText="Go to Store"
+            redirectUrl="/store"
+          />
+        </div>
+      </div>
+    );
   }
-};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -170,6 +195,15 @@ console.log("Token:", token);
                   />
                 </label>
               </div>
+              {previewUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="mt-2 text-red-600 text-sm hover:text-red-700"
+                >
+                  Remove Image
+                </button>
+              )}
               <p className="text-sm text-gray-500 mt-3">Upload your profile picture</p>
             </div>
 
@@ -204,7 +238,6 @@ console.log("Token:", token);
                 placeholder="Enter your phone number"
               />
             </div>
-            
 
             {/* Address */}
             <div>
@@ -225,9 +258,10 @@ console.log("Token:", token);
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={isSubmitting}
+              className="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Complete Profile
+              {isSubmitting ? 'Completing Profile...' : 'Complete Profile'}
             </button>
           </form>
         </div>
