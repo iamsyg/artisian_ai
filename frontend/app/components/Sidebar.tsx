@@ -1,19 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import Link from 'next/link';
 
 export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Static user data
-  const user = {
-    full_name: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    role: 'Premium Member',
-    photo_url: '', // Add image URL if available
-  };
+  const [user, setUser] = useState<{
+    full_name: string;
+    email: string;
+    photo_url: string | null;
+  }>({
+    full_name: '',
+    email: '',
+    photo_url: null,
+  });
+
+  // Fetch user data on auth state change
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const userId = session?.user.id;
+      if (!userId) return;
+
+      const { data: userInfo, error } = await supabase
+        .from('users')
+        .select('full_name, email, photo_url')
+        .eq('user_supabase_uid', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching user:', error);
+        return;
+      }
+
+      if (userInfo) {
+        setUser({
+          full_name: userInfo.full_name,
+          email: userInfo.email,
+          photo_url: userInfo.photo_url,
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Generate initials for profile picture
   const getInitials = (name: string) => {
@@ -164,7 +199,6 @@ export default function Sidebar() {
             {/* User Info */}
             <div>
               <h2 className="text-base font-semibold">{user.full_name}</h2>
-              <p className="text-gray-300 text-sm">{user.role}</p>
             </div>
           </div>
         </div>
