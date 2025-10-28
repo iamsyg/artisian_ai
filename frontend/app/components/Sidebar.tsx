@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const [user, setUser] = useState<{
     full_name: string;
@@ -211,7 +213,10 @@ export default function Sidebar() {
   {item.isLogout ? (
     // 🔴 Logout only button
     <button
-      onClick={item.onclick}
+      onClick={() => {
+  if (item.onclick) item.onclick();
+}}
+
       className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-red-300 hover:bg-red-500/20 transition-all duration-200"
     >
       <div className="p-1 rounded text-red-300">{item.icon}</div>
@@ -224,14 +229,14 @@ export default function Sidebar() {
         <button
           onClick={() => handleMenuItemClick(item.name)}
           className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-            item.active
+            pathname === item.href
               ? "bg-blue-500/20 text-blue-300"
               : "text-gray-300 hover:bg-gray-800"
           }`}
         >
           <div
             className={`p-1 rounded ${
-              item.active ? "text-blue-300" : "text-gray-400"
+              pathname === item.href ? "text-blue-300" : "text-gray-400"
             }`}
           >
             {item.icon}
