@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Sidebar from '@/app/components/Sidebar';
 import { redirect } from 'next/navigation';
+import { Target } from 'lucide-react';
 
 interface GuideSection {
   title: string;
@@ -216,11 +217,13 @@ const ArtisanGuidePage = () => {
 
         {/* Portal Button */}
         <button
-          onClick={() => redirect(`${process.env.NEXT_PUBLIC_DASHBOARD_URL}/auth/login`)}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center space-x-2 z-40"
-        >
-          <span className="font-semibold">Artisan Portal</span>
-          <span className="text-lg">🚪</span>
+            onClick={() =>
+                window.open(`${process.env.NEXT_PUBLIC_DASHBOARD_URL}/auth/login`, "_blank")
+            }
+            className="fixed bottom-6 right-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center space-x-2 z-40"
+            >
+            <span className="font-semibold">Artisan Portal</span>
+            <span className="text-lg">🚪</span>
         </button>
 
         {/* Portal Modal */}
