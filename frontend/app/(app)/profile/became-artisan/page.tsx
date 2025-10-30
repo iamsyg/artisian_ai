@@ -218,7 +218,7 @@ const ArtisanGuidePage = () => {
         {/* Portal Button */}
         <button
             onClick={() =>
-                window.open(`${process.env.NEXT_PUBLIC_DASHBOARD_URL}/auth/login`, "_blank")
+                window.open(`${process.env.NEXT_PUBLIC_DASHBOARD_URL}/auth/artisan-signup`, "_blank")
             }
             className="fixed bottom-6 right-6 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center space-x-2 z-40"
             >
