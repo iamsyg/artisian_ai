@@ -14,10 +14,12 @@ export default function Sidebar() {
     full_name: string;
     email: string;
     photo_url: string | null;
+    is_artisan?: boolean;
   }>({
     full_name: '',
     email: '',
     photo_url: null,
+    is_artisan: false,
   });
 
   // Fetch user data on auth state change
@@ -30,7 +32,7 @@ export default function Sidebar() {
 
       const { data: userInfo, error } = await supabase
         .from('users')
-        .select('full_name, email, photo_url')
+        .select('full_name, email, photo_url, is_artisan')
         .eq('user_supabase_uid', userId)
         .maybeSingle();
 
@@ -44,6 +46,7 @@ export default function Sidebar() {
           full_name: userInfo.full_name,
           email: userInfo.email,
           photo_url: userInfo.photo_url,
+          is_artisan: userInfo.is_artisan,
         });
       }
     });
@@ -81,14 +84,14 @@ export default function Sidebar() {
     },
     {
       id: 2,
-      name: 'Artisan Dashboard',
+      name: user.is_artisan ? 'Artisan Dashboard' : 'Become Artisan',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      href: "/profile/became-artisan",
-      label: 'Become Artisan',
+      href: user.is_artisan ? "/profile/artisan-dashboard" : "/profile/became-artisan",
+      label: user.is_artisan ? 'Artisan Dashboard' : 'Become Artisan',
       active: false,
     },
     {
