@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Footer from '@/app/components/Footer';
 import ArtisanChat from '@/app/components/ArtisanChat';
-import { supabase } from '@/app/lib/supabaseClient';
+// import { supabase } from '@/app/lib/supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import { createClient } from '@/app/lib/supabaseClient';
 
 // Product card component
 interface artisanCardProps {
@@ -17,10 +18,9 @@ interface artisanCardProps {
   artisanReviews?: string
 }
 
+const supabase = createClient();
 
 const ArtisanCard: React.FC<artisanCardProps> = ({ artisanId, artisanName, artisanDescription, artisanImage, artisanCategory, artisanRating, artisanReviews }) => {
-
-
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser()

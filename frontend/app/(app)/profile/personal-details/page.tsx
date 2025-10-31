@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Sidebar from '@/app/components/Sidebar';
-import { supabase } from '@/app/lib/supabaseClient';
+// import { supabase } from '@/app/lib/supabaseClient';
 import { User } from '@/app/types/user';
+import { createClient } from '@/app/lib/supabaseClient';
 
 interface user {
   full_name: string;
@@ -19,6 +20,7 @@ const PersonalProfilePage = () => {
   // Static user data
 
   const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
       const {

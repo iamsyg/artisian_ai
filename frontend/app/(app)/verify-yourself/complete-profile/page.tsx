@@ -3,8 +3,9 @@
 
 import { useState, useRef, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from "@/app/lib/supabaseClient";
+// import { supabase } from "@/app/lib/supabaseClient";
 import VerifiedBadge from '@/app/components/VerifiedBadge';
+import { createClient } from '@/app/lib/supabaseClient';
 
 interface ProfileFormData {
   fullName: string;
@@ -27,6 +28,7 @@ export default function ProfilePage() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isProfileComplete, setIsProfileComplete] = useState(false); // New state
   const router = useRouter();
+  const supabase = createClient();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

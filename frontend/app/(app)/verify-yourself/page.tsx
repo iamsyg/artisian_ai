@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "@/app/lib/supabaseClient";
+// import { supabase } from "@/app/lib/supabaseClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/app/lib/supabaseClient";
 
 const Page = () => {
   const router = useRouter();
   const [redirectUrl, setRedirectUrl] = useState<string>("");
+  const supabase = createClient();
 
   useEffect(() => {
     // 👀 listen for auth state change
