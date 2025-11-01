@@ -183,7 +183,7 @@ export default function SignupForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Profile completion failed");
+        throw new Error(errorData.message);
       }
 
       console.log("Profile completed successfully", response);
@@ -201,9 +201,9 @@ export default function SignupForm() {
       setCoverPreview('');
       
       router.push('/profile/artisan-dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
-      alert('Error registering shop. Please try again.');
+      alert(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -561,7 +561,7 @@ export default function SignupForm() {
                 <div className="text-center pt-3">
                   <p className="text-gray-600 text-sm">
                     Already have an account?{' '}
-                    <Link href="/login" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
+                    <Link href="/profile/artisan-signin" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
                       Sign in here
                     </Link>
                   </p>

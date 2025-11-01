@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (existingUser.is_artisan) {
+    if (existingUser.artisan_email) {
       return NextResponse.json(
-        { error: "User is already registered as an artisan" },
+        {message: "User is already an artisan" },
         { status: 400 }
       );
     }
