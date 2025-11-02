@@ -31,7 +31,7 @@ export default function DashboardNavbar({ isSidebarOpen, toggleSidebar }: Navbar
   const menuItems = [
     {
       name: 'Add Service',
-      href: '/profile/artisan-dashboard/add-services',
+      href: '/profile/artisan-dashboard/add-service',
       icon: PlusCircle,
       description: 'Add new services'
     },
