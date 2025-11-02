@@ -239,13 +239,9 @@ export default function SignupForm() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-screen w-64 z-30">
-        <Sidebar />
-      </div>
 
       {/* Main Content */}
-      <div className="ml-64"> {/* Add margin to account for sidebar */}
+      <div> {/* Add margin to account for sidebar */}
         <div className="container mx-auto px-8 py-8">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 max-w-7xl mx-auto">
             {/* Left Side - Guidelines */}

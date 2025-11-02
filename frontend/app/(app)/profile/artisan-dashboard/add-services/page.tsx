@@ -5,7 +5,7 @@ import { useState } from 'react';
 import DashboardNavbar from '@/app/components/DashboardNavbar';
 import Sidebar from '@/app/components/Sidebar';
 
-export default function DashboardLayout({
+export default function page({
   children,
 }: {
   children: React.ReactNode;

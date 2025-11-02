@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Sidebar from '@/app/components/Sidebar';
 
 const ContactUsPage = () => {
   // Static contact information
@@ -82,13 +81,9 @@ const ContactUsPage = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Fixed Sidebar */}
-      <div className="fixed left-0 h-screen w-64 z-30">
-        <Sidebar />
-      </div>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64 p-6">
+      <div className="flex-1 p-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Contact Us</h1>
