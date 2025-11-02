@@ -33,7 +33,7 @@ export default function DashboardNavbar({ isSidebarOpen, toggleSidebar }: Navbar
       name: 'Add Service',
       href: '/profile/artisan-dashboard/add-service',
       icon: PlusCircle,
-      description: 'Add new services'
+      description: 'Add new service'
     },
     {
       name: 'Analytics',
