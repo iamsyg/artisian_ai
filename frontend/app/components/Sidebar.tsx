@@ -23,38 +23,65 @@ export default function Sidebar() {
   });
 
   // Fetch user data on auth state change
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const userId = session?.user.id;
-      if (!userId) return;
+  // useEffect(() => {
+  //   const {
+  //     data: { subscription },
+  //   } = supabase.auth.onAuthStateChange(async (_event, session) => {
+  //     const userId = session?.user.id;
+  //     if (!userId) return;
+
+  //     const { data: userInfo, error } = await supabase
+  //       .from('users')
+  //       .select('full_name, email, photo_url, is_artisan')
+  //       .eq('user_supabase_uid', userId)
+  //       .maybeSingle();
+
+  //     if (error) {
+  //       console.error('Error fetching user:', error);
+  //       return;
+  //     }
+
+  //     if (userInfo) {
+  //       setUser({
+  //         full_name: userInfo.full_name,
+  //         email: userInfo.email,
+  //         photo_url: userInfo.photo_url,
+  //         is_artisan: userInfo.is_artisan,
+  //       });
+  //     }
+  //   });
+
+  //   return () => {
+  //     subscription.unsubscribe();
+  //   };
+  // }, []);
+
+    useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
       const { data: userInfo, error } = await supabase
         .from('users')
         .select('full_name, email, photo_url, is_artisan')
-        .eq('user_supabase_uid', userId)
+        .eq('user_supabase_uid', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user:', error);
-        return;
+      if (!error && userInfo) {
+        setUser(userInfo);
       }
+    };
 
-      if (userInfo) {
-        setUser({
-          full_name: userInfo.full_name,
-          email: userInfo.email,
-          photo_url: userInfo.photo_url,
-          is_artisan: userInfo.is_artisan,
-        });
-      }
+    getUser(); // fetch once
+
+    // optional: update on sign-in/sign-out only
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) getUser();
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
+
 
   // Generate initials for profile picture
   const getInitials = (name: string) => {

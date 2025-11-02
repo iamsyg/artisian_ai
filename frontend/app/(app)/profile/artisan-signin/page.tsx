@@ -16,6 +16,7 @@ import {
   Shield
 } from 'lucide-react';
 import Sidebar from '@/app/components/Sidebar';
+import { createClient } from '@/app/lib/supabaseClient';
 
 export default function ArtisanSignIn() {
   const [formData, setFormData] = useState({
@@ -31,6 +32,7 @@ export default function ArtisanSignIn() {
   const [rememberMe, setRememberMe] = useState(false);
   
   const router = useRouter();
+  const supabase = createClient();
 
   const validateForm = () => {
     const newErrors = {
@@ -77,24 +79,53 @@ export default function ArtisanSignIn() {
 
     setIsSubmitting(true);
 
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+      alert("You must be logged in as a customer first.");
+      return;
+    }
+
+    const token = sessionData.session.access_token;
+    console.log("Customer token:", token);
+
     try {
-      // Simulate API call for authentication
-      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const { data } = await supabase.auth.getUser();
+      const email = data.user?.email;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/artisan-signin`,
+        {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            artisan_email: formData.email,
+            artisan_password: formData.password,
+          })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      console.log("Profile completed successfully", response);
       
-      console.log('Sign in attempt:', formData);
+      // Reset form after successful submission
+      setFormData({
+        email: '',
+        password: '',
+      });
       
-      // Here you would typically:
-      // 1. Call your authentication API
-      // 2. Handle the response
-      // 3. Redirect on success
-      
-      // For demo purposes, we'll simulate successful login
-      alert('Successfully signed in!');
-      router.push('/artisan-dashboard');
-      
-    } catch (error) {
-      console.error('Sign in error:', error);
-      alert('Invalid email or password. Please try again.');
+      router.push('/profile/artisan-dashboard');
+    } catch (error: any) {
+      console.error('Error submitting form:', error);
+      alert(error.message);
     } finally {
       setIsSubmitting(false);
     }
