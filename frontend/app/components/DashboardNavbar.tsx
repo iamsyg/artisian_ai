@@ -37,7 +37,7 @@ export default function DashboardNavbar({ isSidebarOpen, toggleSidebar }: Navbar
     },
     {
       name: 'Analytics',
-      href: '/dashboard/analytics',
+      href: '/profile/artisan-dashboard/analytics',
       icon: BarChart3,
       description: 'View performance metrics'
     },
